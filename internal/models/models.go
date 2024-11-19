@@ -21,8 +21,13 @@ type Employee struct {
 	Department Department `json:"department"`
 }
 
-type EmployeesListResponse struct {
-	Employees []Employee
+type EmployeeResponse struct {
+	ID           int
+	Name         string
+	Surname      string
+	Phone        string
+	DepartmentId int
+	Passport     Passport
 }
 
 type EmployeeRequest struct {
@@ -34,16 +39,16 @@ type EmployeeRequest struct {
 	DepartmentId int      `json:"department_id" binding:"required"`
 }
 
-type UpdatedEmployeeRequest struct {
-	ID           int             `json:"id"`
-	Name         *string         `json:"name, omitempty"`
-	Surname      *string         `json:"surname, omitempty"`
-	Phone        *string         `json:"phone, omitempty"`
-	Passport     UpdatedPassport `json:"passport, omitempty"`
-	DepartmentId int             `json:"department_id"`
+type UpdateEmployeeRequest struct {
+	ID           int            `json:"id"`
+	Name         *string        `json:"name"`
+	Surname      *string        `json:"surname"`
+	Phone        *string        `json:"phone"`
+	Passport     UpdatePassport `json:"passport"`
+	DepartmentId int            `json:"department_id"`
 }
 
-type UpdatedPassport struct {
-	Type   *string `json:"type, omitempty"`
-	Number *string `json:"number, omitempty"`
+type UpdatePassport struct {
+	Type   *string `json:"type"`
+	Number *string `json:"number"`
 }

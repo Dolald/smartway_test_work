@@ -9,7 +9,10 @@ import (
 
 type Employee interface {
 	CreateEmployee(ctx context.Context, input models.EmployeeRequest) (int, error)
-	UpdateEmployee(ctx context.Context, input models.UpdatedEmployeeRequest) error
+	UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest) error
+	DeleteEmployee(ctx context.Context, id int) error
+	GetEmployeesCompanyDepartment(ctx context.Context, id int) ([]models.EmployeeResponse, error)
+	GetEmployeesCompany(ctx context.Context, id int) ([]models.EmployeeResponse, error)
 }
 
 type Repository struct {
