@@ -1,18 +1,24 @@
 package service
 
 import (
+	"context"
+
+	"github.com/Dolald/smartway_test_work/internal/models"
 	"github.com/Dolald/smartway_test_work/internal/repository"
 )
 
-type Workers interface {
+type Employee interface {
+	CreateEmployee(ctx context.Context, input models.EmployeeRequest) (int, error)
+	UpdateEmployee(ctx context.Context, input models.UpdatedEmployeeRequest) error
+	GetEmployeesCompanyDepartment(ctx context.Context, id int) (models.EmployeesListResponse, error)
 }
 
 type Service struct {
-	Workers
+	Employee
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(repository *repository.Repository) *Service {
 	return &Service{
-		Workers: NewWorkersService(repos),
+		Employee: NewEmployeeService(repository.Employee),
 	}
 }

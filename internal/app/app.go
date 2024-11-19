@@ -16,14 +16,13 @@ import (
 )
 
 func Run() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	if err := initConfig(); err != nil {
-		logger.Error("error initializing configs", slog.String("error", err.Error()))
+		slog.Error("error initializing configs", slog.String("error", err.Error()))
 	}
 
 	if err := godotenv.Load(); err != nil {
-		logger.Error("error loading env variables: %s", slog.String("error", err.Error()))
+		slog.Error("error loading env variables: %s", slog.String("error", err.Error()))
 	}
 
 	db, err := repository.NewPostgresDB(repository.Config{
@@ -36,35 +35,35 @@ func Run() {
 	})
 
 	if err != nil {
-		logger.Error("failed to initialize db", slog.String("error", err.Error()))
+		slog.Error("failed to initialize db", slog.String("error", err.Error()))
 	}
 
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services, logger)
+	handlers := handler.NewHandler(services)
 
 	server := new(server.Server)
 
 	go func() {
 		if err := server.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-			logger.Error("error occured while runnung http server", slog.String("error", err.Error()))
+			slog.Error("error occured while runnung http server", slog.String("error", err.Error()))
 		}
 	}()
 
-	logger.Info("web-cache started")
+	slog.Info("web-server started")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	logger.Info("web-cache shuttong down")
+	slog.Info("web-server shuttong down")
 
 	if err := server.Shutdown(context.Background()); err != nil {
-		logger.Error("error occured on server shutting down: %s", err.Error())
+		slog.Error("error occured on server shutting down", slog.String("error", err.Error()))
 	}
 
 	if err := db.Close(); err != nil {
-		logger.Error("error occured on db connection close: %s", err.Error())
+		slog.Error("error occured on db connection close", slog.String("error", err.Error()))
 	}
 }
 
