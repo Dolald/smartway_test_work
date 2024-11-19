@@ -29,7 +29,17 @@ func (r *EmployeeRepository) CreateEmployee(ctx context.Context, input models.Em
 	return input.ID, nil
 }
 
-func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest) error {
+func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest, id int) error {
+	var exists bool
+	checkQuery := "SELECT EXISTS(SELECT 1 FROM employees WHERE id = $1)"
+	err := r.db.QueryRowContext(ctx, checkQuery, id).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("failed to check if employee exists: %w", err)
+	}
+	if !exists {
+		return fmt.Errorf("employee with id %d does not exist", id)
+	}
+
 	values := make([]string, 0)
 	args := make([]any, 0)
 	argsId := 1
@@ -73,9 +83,9 @@ func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.Up
 	setQuery := strings.Join(values, ", ")
 
 	query := fmt.Sprintf("UPDATE employees SET %s WHERE id = $%d", setQuery, argsId)
-	args = append(args, input.ID)
+	args = append(args, id)
 
-	_, err := r.db.ExecContext(ctx, query, args...)
+	_, err = r.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

@@ -22,7 +22,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		employees.GET("/department/:id", h.getEmployeesCompanyDepartment)
 		employees.GET("/company/:id", h.getCompanyEmployees)
 		employees.DELETE("/:id", h.deleteEmployee)
-		employees.PUT("/", h.updateWorker)
+		employees.PUT("/:id", h.updateEmployee)
 	}
 
 	return router
