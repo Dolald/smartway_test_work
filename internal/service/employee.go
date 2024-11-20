@@ -17,17 +17,17 @@ func NewEmployeeService(repository repository.Employee) *EmployeeService {
 	return &EmployeeService{repository: repository}
 }
 
-func (s *EmployeeService) CreateEmployee(ctx context.Context, input models.CreateEmployeeRequest) (int, error) {
-	workerId, err := s.repository.CreateEmployee(ctx, converter.ModelToDomainForCteate(input))
+func (s *EmployeeService) CreateEmployee(ctx context.Context, employee models.CreateEmployeeRequest) (int, error) {
+	employeeId, err := s.repository.CreateEmployee(ctx, converter.ModelToDomainForCteate(employee))
 	if err != nil {
 		return 0, fmt.Errorf("CreateEmployee failed: %w", err)
 	}
 
-	return workerId, nil
+	return employeeId, nil
 }
 
-func (s *EmployeeService) UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest, id int) error {
-	err := s.repository.UpdateEmployee(ctx, converter.ModelToDomainForUpdate(input), id)
+func (s *EmployeeService) UpdateEmployee(ctx context.Context, employee models.UpdateEmployeeRequest, id int) error {
+	err := s.repository.UpdateEmployee(ctx, converter.ModelToDomainForUpdate(employee), id)
 	if err != nil {
 		return fmt.Errorf("UpdateEmployee failed: %w", err)
 	}
@@ -36,33 +36,23 @@ func (s *EmployeeService) UpdateEmployee(ctx context.Context, input models.Updat
 }
 
 func (s *EmployeeService) GetEmployeesByDepartmentId(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
-	// var exists bool
-	// checkQuery := "SELECT COUNT(*) FROM employees WHERE id = $1)"
-	// err := r.db.QueryRowContext(ctx, checkQuery, id).Scan(&exists)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to check if employee exists: %w", err)
-	// }
-	// if !exists {
-	// 	return fmt.Errorf("employee with id %d does not exist", id)
-	// }
-
 	list, err := s.repository.GetEmployeesByDepartmentId(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("GetEmployeesByDepartmentId failed: %w", err)
 	}
 
-	responseList := converter.DomainToModel(list)
+	responseList := converter.DomainToModelEmployee(list)
 
 	return responseList, nil
 }
 
-func (s *EmployeeService) GetEmployeesCompany(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
-	list, err := s.repository.GetEmployeesCompany(ctx, id)
+func (s *EmployeeService) GetEmployeesByCompanyId(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
+	list, err := s.repository.GetEmployeesByCompanyId(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("GetEmployeesCompany failed: %w", err)
+		return nil, fmt.Errorf("GetEmployeesByCompanyId failed: %w", err)
 	}
 
-	responseList := converter.DomainToModel(list)
+	responseList := converter.DomainToModelEmployee(list)
 
 	return responseList, nil
 }

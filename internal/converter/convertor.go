@@ -32,7 +32,7 @@ func ModelToDomainForUpdate(emp models.UpdateEmployeeRequest) domain.UpdateEmplo
 	}
 }
 
-func DomainToModel(employees []domain.Employee) []models.EmployeeResponse {
+func DomainToModelEmployee(employees []domain.Employee) []models.EmployeeResponse {
 	var employeeRequests []models.EmployeeResponse
 
 	for _, emp := range employees {

@@ -17,58 +17,58 @@ func NewEmployeeRepository(db *sqlx.DB) *EmployeeRepository {
 	return &EmployeeRepository{db: db}
 }
 
-func (r *EmployeeRepository) CreateEmployee(ctx context.Context, input domain.Employee) (int, error) {
+func (r *EmployeeRepository) CreateEmployee(ctx context.Context, employee domain.Employee) (int, error) {
 	query := `INSERT INTO employees (name, surname, phone, department_id, passport_type, passport_number) 
 	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;`
 
 	var employeeId int
 
-	err := r.db.QueryRowContext(ctx, query, input.Name, input.Surname, input.Phone, input.DepartmentId, input.Passport.Type, input.Passport.Number).Scan(&employeeId)
+	err := r.db.QueryRowContext(ctx, query, employee.Name, employee.Surname, employee.Phone, employee.DepartmentId, employee.Passport.Type, employee.Passport.Number).Scan(&employeeId)
 	if err != nil {
-		return 0, fmt.Errorf("failed to scan input.ID: %w", err)
+		return 0, fmt.Errorf("failed to scan employee.ID: %w", err)
 	}
 
 	return employeeId, nil
 }
 
-func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input domain.UpdateEmployee, id int) error {
+func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, employee domain.UpdateEmployee, id int) error {
 	values := make([]string, 0)
 	args := make([]any, 0)
 	argsId := 1
 
-	if input.Name != nil {
+	if employee.Name != nil {
 		values = append(values, fmt.Sprintf("name=$%d", argsId))
-		args = append(args, input.Name)
+		args = append(args, employee.Name)
 		argsId++
 	}
 
-	if input.Surname != nil {
+	if employee.Surname != nil {
 		values = append(values, fmt.Sprintf("surname=$%d", argsId))
-		args = append(args, input.Surname)
+		args = append(args, employee.Surname)
 		argsId++
 	}
 
-	if input.Phone != nil {
+	if employee.Phone != nil {
 		values = append(values, fmt.Sprintf("phone=$%d", argsId))
-		args = append(args, input.Phone)
+		args = append(args, employee.Phone)
 		argsId++
 	}
 
-	if input.DepartmentId != 0 {
+	if employee.DepartmentId != 0 {
 		values = append(values, fmt.Sprintf("department_id=$%d", argsId))
-		args = append(args, input.DepartmentId)
+		args = append(args, employee.DepartmentId)
 		argsId++
 	}
 
-	if input.Passport.Type != nil {
+	if employee.Passport.Type != nil {
 		values = append(values, fmt.Sprintf("passport_type=$%d", argsId))
-		args = append(args, input.Passport.Type)
+		args = append(args, employee.Passport.Type)
 		argsId++
 	}
 
-	if input.Passport.Number != nil {
+	if employee.Passport.Number != nil {
 		values = append(values, fmt.Sprintf("passport_number=$%d", argsId))
-		args = append(args, input.Passport.Number)
+		args = append(args, employee.Passport.Number)
 		argsId++
 	}
 
@@ -77,9 +77,18 @@ func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input domain.Up
 	query := fmt.Sprintf("UPDATE employees SET %s WHERE id = $%d", setQuery, argsId)
 	args = append(args, id)
 
-	_, err := r.db.ExecContext(ctx, query, args...)
+	rows, err := r.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("ExecContext failed: %w", err)
+	}
+
+	rowsAffected, err := rows.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get affected rows: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("employee with id %d not found", id)
 	}
 
 	return nil
@@ -90,7 +99,7 @@ func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id 
 
 	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("input failed: %w", err)
+		return nil, fmt.Errorf("employee failed: %w", err)
 	}
 	defer rows.Close()
 
@@ -111,7 +120,7 @@ func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id 
 	return list, nil
 }
 
-func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([]domain.Employee, error) {
+func (r *EmployeeRepository) GetEmployeesByCompanyId(ctx context.Context, id int) ([]domain.Employee, error) {
 
 	query := `SELECT e.id, e.name, e.surname, e.phone, e.department_id, e.passport_type, e.passport_number FROM employees e
 	          JOIN departments d ON d.id = e.id 
@@ -119,7 +128,7 @@ func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([
 
 	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("input failed: %w", err)
+		return nil, fmt.Errorf("employee failed: %w", err)
 	}
 	defer rows.Close()
 

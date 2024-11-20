@@ -8,10 +8,10 @@ import (
 )
 
 type Employee interface {
-	CreateEmployee(ctx context.Context, input models.CreateEmployeeRequest) (int, error)
-	UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest, id int) error
+	CreateEmployee(ctx context.Context, employee models.CreateEmployeeRequest) (int, error)
+	UpdateEmployee(ctx context.Context, employee models.UpdateEmployeeRequest, id int) error
 	GetEmployeesByDepartmentId(ctx context.Context, id int) ([]models.EmployeeResponse, error)
-	GetEmployeesCompany(ctx context.Context, id int) ([]models.EmployeeResponse, error)
+	GetEmployeesByCompanyId(ctx context.Context, id int) ([]models.EmployeeResponse, error)
 	DeleteEmployee(ctx context.Context, id int) error
 }
 

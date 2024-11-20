@@ -23,7 +23,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		employees.POST("/companies/departments/add_employee", h.createEmployee)
 		employees.GET("/companies/departments/:id/employees", h.getEmployeesByDepartmentId)
-		employees.GET("/companies/:id/employees", h.getCompanyEmployees)
+		employees.GET("/companies/:id/employees", h.getEmployeesByCompanyId)
 		employees.DELETE("/:id", h.deleteEmployee)
 		employees.PUT("/:id", h.updateEmployee)
 	}

@@ -8,11 +8,11 @@ import (
 )
 
 type Employee interface {
-	CreateEmployee(ctx context.Context, input domain.Employee) (int, error)
-	UpdateEmployee(ctx context.Context, input domain.UpdateEmployee, id int) error
+	CreateEmployee(ctx context.Context, employee domain.Employee) (int, error)
+	UpdateEmployee(ctx context.Context, employee domain.UpdateEmployee, id int) error
 	DeleteEmployee(ctx context.Context, id int) error
 	GetEmployeesByDepartmentId(ctx context.Context, id int) ([]domain.Employee, error)
-	GetEmployeesCompany(ctx context.Context, id int) ([]domain.Employee, error)
+	GetEmployeesByCompanyId(ctx context.Context, id int) ([]domain.Employee, error)
 }
 
 type Repository struct {

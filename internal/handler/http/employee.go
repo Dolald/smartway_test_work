@@ -84,7 +84,7 @@ func (h *Handler) getEmployeesByDepartmentId(c *gin.Context) {
 	c.JSON(http.StatusOK, employeesList)
 }
 
-func (h *Handler) getCompanyEmployees(c *gin.Context) {
+func (h *Handler) getEmployeesByCompanyId(c *gin.Context) {
 	id := c.Param(h.cfg.UrlId)
 	companyId, err := strconv.Atoi(id)
 	if err != nil {
@@ -96,9 +96,9 @@ func (h *Handler) getCompanyEmployees(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
-	employeesList, err := h.service.Employee.GetEmployeesCompany(ctx, companyId)
+	employeesList, err := h.service.Employee.GetEmployeesByCompanyId(ctx, companyId)
 	if err != nil {
-		slog.Error("GetEmployeesCompany failed", slog.String("error", err.Error()))
+		slog.Error("GetEmployeesByCompanyId failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to get employee list"})
 		return
 	}
