@@ -1,11 +1,5 @@
 package models
 
-type Department struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Phone string `json:"phone"`
-}
-
 type EmployeeResponse struct {
 	ID           int
 	DepartmentId int

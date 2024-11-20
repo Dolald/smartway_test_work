@@ -18,7 +18,7 @@ func NewEmployeeService(repository repository.Employee) *EmployeeService {
 }
 
 func (s *EmployeeService) CreateEmployee(ctx context.Context, employee models.CreateEmployeeRequest) (int, error) {
-	employeeId, err := s.repository.CreateEmployee(ctx, converter.ModelToDomainForCteate(employee))
+	employeeId, err := s.repository.CreateEmployee(ctx, converter.EmployeeFromModel(employee))
 	if err != nil {
 		return 0, fmt.Errorf("CreateEmployee failed: %w", err)
 	}
@@ -41,9 +41,7 @@ func (s *EmployeeService) GetEmployeesByDepartmentId(ctx context.Context, id int
 		return nil, fmt.Errorf("GetEmployeesByDepartmentId failed: %w", err)
 	}
 
-	responseList := converter.DomainToModelEmployee(list)
-
-	return responseList, nil
+	return converter.DomainToModelEmployee(list), nil
 }
 
 func (s *EmployeeService) GetEmployeesByCompanyId(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
@@ -52,9 +50,7 @@ func (s *EmployeeService) GetEmployeesByCompanyId(ctx context.Context, id int) (
 		return nil, fmt.Errorf("GetEmployeesByCompanyId failed: %w", err)
 	}
 
-	responseList := converter.DomainToModelEmployee(list)
-
-	return responseList, nil
+	return converter.DomainToModelEmployee(list), nil
 }
 
 func (s *EmployeeService) DeleteEmployee(ctx context.Context, id int) error {

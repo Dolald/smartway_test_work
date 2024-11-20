@@ -5,7 +5,7 @@ import (
 	"github.com/Dolald/smartway_test_work/internal/models"
 )
 
-func ModelToDomainForCteate(emp models.CreateEmployeeRequest) domain.Employee {
+func EmployeeFromModel(emp models.CreateEmployeeRequest) domain.Employee {
 	return domain.Employee{
 		Name:         emp.Name,
 		Surname:      emp.Surname,

@@ -12,8 +12,7 @@ type Handler struct {
 }
 
 func NewHandler(services *service.Service, cfg *configs.HandlerConfig) *Handler {
-	return &Handler{service: services,
-		cfg: cfg}
+	return &Handler{service: services, cfg: cfg}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {

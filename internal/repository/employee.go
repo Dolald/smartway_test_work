@@ -18,14 +18,15 @@ func NewEmployeeRepository(db *sqlx.DB) *EmployeeRepository {
 }
 
 func (r *EmployeeRepository) CreateEmployee(ctx context.Context, employee domain.Employee) (int, error) {
-	query := `INSERT INTO employees (name, surname, phone, department_id, passport_type, passport_number) 
+	query := `INSERT INTO employees 
+	(name, surname, phone, department_id, passport_type, passport_number) 
 	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;`
 
 	var employeeId int
 
 	err := r.db.QueryRowContext(ctx, query, employee.Name, employee.Surname, employee.Phone, employee.DepartmentId, employee.Passport.Type, employee.Passport.Number).Scan(&employeeId)
 	if err != nil {
-		return 0, fmt.Errorf("failed to scan employee.ID: %w", err)
+		return 0, fmt.Errorf("error in CreateEmployee: failed to scan employee.ID: %w", err)
 	}
 
 	return employeeId, nil
@@ -79,16 +80,16 @@ func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, employee domain
 
 	rows, err := r.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("ExecContext failed: %w", err)
+		return fmt.Errorf("error in UpdateEmployee: ExecContext failed: %w", err)
 	}
 
 	rowsAffected, err := rows.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to get affected rows: %w", err)
+		return fmt.Errorf("error in UpdateEmployee: failed to get affected rows: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("employee with id %d not found", id)
+		return fmt.Errorf("error in UpdateEmployee: employee with id %d not found", id)
 	}
 
 	return nil
@@ -99,7 +100,7 @@ func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id 
 
 	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("employee failed: %w", err)
+		return nil, fmt.Errorf("error in GetEmployeesByDepartmentId: QueryContext failed: %w", err)
 	}
 	defer rows.Close()
 
@@ -108,13 +109,13 @@ func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id 
 	for rows.Next() {
 		var employee domain.Employee
 		if err := rows.Scan(&employee.ID, &employee.Name, &employee.Surname, &employee.Phone, &employee.DepartmentId, &employee.Passport.Type, &employee.Passport.Number); err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+			return nil, fmt.Errorf("error in GetEmployeesByDepartmentId: failed to scan row: %w", err)
 		}
 		list = append(list, employee)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %w", err)
+		return nil, fmt.Errorf("error in GetEmployeesByDepartmentId: rows iteration error: %w", err)
 	}
 
 	return list, nil
@@ -123,12 +124,12 @@ func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id 
 func (r *EmployeeRepository) GetEmployeesByCompanyId(ctx context.Context, id int) ([]domain.Employee, error) {
 
 	query := `SELECT e.id, e.name, e.surname, e.phone, e.department_id, e.passport_type, e.passport_number FROM employees e
-	          JOIN departments d ON d.id = e.id 
-	          WHERE d.company_id = $1`
+	JOIN departments d ON d.id = e.id 
+	WHERE d.company_id = $1`
 
 	rows, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("employee failed: %w", err)
+		return nil, fmt.Errorf("error in GetEmployeesByCompanyId: QueryContext failed: %w", err)
 	}
 	defer rows.Close()
 
@@ -137,13 +138,13 @@ func (r *EmployeeRepository) GetEmployeesByCompanyId(ctx context.Context, id int
 	for rows.Next() {
 		var employee domain.Employee
 		if err := rows.Scan(&employee.ID, &employee.Name, &employee.Surname, &employee.Phone, &employee.DepartmentId, &employee.Passport.Type, &employee.Passport.Number); err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+			return nil, fmt.Errorf("error in GetEmployeesByCompanyId: failed to scan row: %w", err)
 		}
 		list = append(list, employee)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %w", err)
+		return nil, fmt.Errorf("error in GetEmployeesByCompanyId: rows iteration error: %w", err)
 	}
 
 	return list, nil
@@ -154,16 +155,16 @@ func (r *EmployeeRepository) DeleteEmployee(ctx context.Context, id int) error {
 
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("employee delete failed: %w", err)
+		return fmt.Errorf("error in DeleteEmployee: employee delete failed: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
+		return fmt.Errorf("error in DeleteEmployee: failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("no employee found with id: %d", id)
+		return fmt.Errorf("error in DeleteEmployee: no employee found with id: %d", id)
 	}
 
 	return nil
