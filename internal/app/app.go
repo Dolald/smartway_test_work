@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Dolald/smartway_test_work/configs"
 	handler "github.com/Dolald/smartway_test_work/internal/handler/http"
 	"github.com/Dolald/smartway_test_work/internal/repository"
 	"github.com/Dolald/smartway_test_work/internal/service"
@@ -16,8 +17,8 @@ import (
 )
 
 func Run() {
-
-	if err := initConfig(); err != nil {
+	cfg, err := configs.InitConfig()
+	if err != nil {
 		slog.Error("error initializing configs", slog.String("error", err.Error()))
 	}
 
@@ -25,12 +26,12 @@ func Run() {
 		slog.Error("error loading env variables: %s", slog.String("error", err.Error()))
 	}
 
-	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     viper.GetString("db.host"),
-		Port:     viper.GetString("db.port"),
-		Username: viper.GetString("db.username"),
-		DBName:   viper.GetString("db.dbname"),
-		SSLMode:  viper.GetString("db.sslmode"),
+	db, err := repository.NewPostgresDB(&configs.DatabaseConfig{
+		Host:     cfg.DataBase.Host,
+		Port:     cfg.DataBase.Port,
+		Username: cfg.DataBase.Username,
+		DBName:   cfg.DataBase.DBName,
+		SSLMode:  cfg.DataBase.SSLMode,
 		Password: os.Getenv("DB_PASSWORD"),
 	})
 
@@ -40,12 +41,12 @@ func Run() {
 
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
+	handlers := handler.NewHandler(services, cfg.Handler)
 
 	server := new(server.Server)
 
 	go func() {
-		if err := server.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+		if err := server.Run(viper.GetString("server.port"), handlers.InitRoutes()); err != nil {
 			slog.Error("error occured while runnung http server", slog.String("error", err.Error()))
 		}
 	}()
@@ -65,10 +66,4 @@ func Run() {
 	if err := db.Close(); err != nil {
 		slog.Error("error occured on db connection close", slog.String("error", err.Error()))
 	}
-}
-
-func initConfig() error {
-	viper.AddConfigPath("configs")
-	viper.SetConfigName("config")
-	return viper.ReadInConfig()
 }

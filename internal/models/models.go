@@ -1,24 +1,9 @@
 package models
 
-type Passport struct {
-	Type   string `json:"type"`
-	Number string `json:"number"`
-}
-
 type Department struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
-}
-
-type Employee struct {
-	ID         int        `json:"id"`
-	CompanyID  int        `json:"company_id"`
-	Name       string     `json:"name"`
-	Surname    string     `json:"surname"`
-	Phone      string     `json:"phone"`
-	Passport   Passport   `json:"passport"`
-	Department Department `json:"department"`
 }
 
 type EmployeeResponse struct {
@@ -30,8 +15,12 @@ type EmployeeResponse struct {
 	Passport     Passport
 }
 
-type EmployeeRequest struct {
-	ID           int      `json:"-"`
+type Passport struct {
+	Type   string `json:"type" binding:"required"`
+	Number string `json:"number" binding:"required"`
+}
+
+type CreateEmployeeRequest struct {
 	DepartmentId int      `json:"department_id" binding:"required"`
 	Name         string   `json:"name" binding:"required"`
 	Surname      string   `json:"surname" binding:"required"`
@@ -40,11 +29,11 @@ type EmployeeRequest struct {
 }
 
 type UpdateEmployeeRequest struct {
-	DepartmentId int            `json:"department_id"`
-	Name         *string        `json:"name"`
-	Surname      *string        `json:"surname"`
-	Phone        *string        `json:"phone"`
-	Passport     UpdatePassport `json:"passport"`
+	DepartmentId int             `json:"department_id"`
+	Name         *string         `json:"name"`
+	Surname      *string         `json:"surname"`
+	Phone        *string         `json:"phone"`
+	Passport     *UpdatePassport `json:"passport"`
 }
 
 type UpdatePassport struct {

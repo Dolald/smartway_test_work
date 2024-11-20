@@ -9,21 +9,119 @@
 Сервис поддерживает следующие функции:
 
 1. **Добавление сотрудников**: 
-   - Эндпоинт: `POST /employees`
+   - Эндпоинт: `POST /employees//companies/departments/{employeesId}/add_employee`
    - В ответ возвращается ID добавленного сотрудника.
 
+   Запрос
+   {
+    "department_id": 1,
+    "name": "Иван",
+    "surname": "Иванов",
+    "phone": "+79991234567",
+    "passport": {
+        "type": "паспорт",
+        "number": "1234567890"
+    }
+}
+
+Ответ 
+{
+    "id": 1
+}
+
 2. **Удаление сотрудников**: 
-   - Эндпоинт: `DELETE /employees/{id}`
+   - Эндпоинт: `DELETE /employees/{employeesId}`
    - Удаляет сотрудника по указанному ID.
+Ответ
+{
+    "message": "Employee deleted successfully"
+}
 
 3. **Получение списка сотрудников для указанной компании**: 
-   - Эндпоинт: `GET /employees/companies/{companyId}`
+   - Эндпоинт: `GET /employees/companies/departments/{companyId}/add_employee`
    - Возвращает список всех сотрудников для указанной компании.
+Ответ
+   [
+    {
+        "id": 1,
+        "department_id": 1,
+        "name": "Иван",
+        "surname": "Иванов",
+        "phone": "+79991234567",
+        "passport": {
+            "type": "паспорт",
+            "number": "1234567890"
+        }
+    },
+    {
+        "id": 2,
+        "department_id": 4,
+        "name": "Петр",
+        "surname": "Петров",
+        "phone": "+79991234568",
+        "passport": {
+            "type": "паспорт",
+            "number": "0987654321"
+        }
+    }
+]
 
 4. **Получение списка сотрудников для указанного отдела**: 
-   - Эндпоинт: `GET /employees/departments/{departmentId}`
+   - Эндпоинт: `GET /employees/companies/departments/{departmentsId}/employees`
    - Возвращает список всех сотрудников для указанного отдела.
-
+Ответ
+[
+    {
+        "id": 1,
+        "department_id": 1,
+        "name": "Иван",
+        "surname": "Иванов",
+        "phone": "+79991234567",
+        "passport": {
+            "type": "паспорт",
+            "number": "1234567890"
+        }
+    },
+    {
+        "id": 2,
+        "department_id": 1,
+        "name": "Петр",
+        "surname": "Петров",
+        "phone": "+79991234568",
+        "passport": {
+            "type": "паспорт",
+            "number": "0987654321"
+        }
+    }
+]
 5. **Изменение информации о сотруднике**: 
-   - Эндпоинт: `PUT /employees/{id}`
+   - Эндпоинт: `PUT /{employeesId}`
    - Обновляет информацию о сотруднике по его ID. Изменения применяются только к указанным полям.
+Запрос
+{
+    "department_id": 1,
+    "name": "Иван",
+    "surname": "Иванов",
+    "phone": "+79991234567",
+    "passport": {
+        "type": "паспорт",
+        "number": "1234567890"
+    }
+}
+
+Ответ
+{
+    "department_id": 1,
+    "name": "Иван",
+    "surname": "Иванов",
+    "phone": "+79991234567",
+    "passport": {
+        "type": "паспорт",
+        "number": "1234567890"
+    }
+}
+
+
+
+   Файл миграции был создан с помощью утилиты migrate
+   

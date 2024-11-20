@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Dolald/smartway_test_work/configs"
 	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 )
 
 type Server struct {
@@ -16,11 +16,10 @@ func (s *Server) Run(port string, handler http.Handler) error {
 	s.httpServer = &http.Server{
 		Addr:           port,
 		Handler:        handler,
-		MaxHeaderBytes: configs.MaxHeaderBytes,
-		ReadTimeout:    configs.ReadTimeout,
-		WriteTimeout:   configs.WriteTimeout,
+		MaxHeaderBytes: viper.GetInt("server.maxHeaderBytes"),
+		ReadTimeout:    viper.GetDuration("server.readTimeout"),
+		WriteTimeout:   viper.GetDuration("server.writeTimeout"),
 	}
-
 	return s.httpServer.ListenAndServe()
 }
 

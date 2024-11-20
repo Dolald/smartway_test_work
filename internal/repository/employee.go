@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Dolald/smartway_test_work/internal/models"
+	"github.com/Dolald/smartway_test_work/internal/domain"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,48 +17,40 @@ func NewEmployeeRepository(db *sqlx.DB) *EmployeeRepository {
 	return &EmployeeRepository{db: db}
 }
 
-func (r *EmployeeRepository) CreateEmployee(ctx context.Context, input models.EmployeeRequest) (int, error) {
+func (r *EmployeeRepository) CreateEmployee(ctx context.Context, input domain.Employee) (int, error) {
 	query := `INSERT INTO employees (name, surname, phone, department_id, passport_type, passport_number) 
 	VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;`
 
-	err := r.db.QueryRowContext(ctx, query, input.Name, input.Surname, input.Phone, input.DepartmentId, input.Passport.Type, input.Passport.Number).Scan(&input.ID)
+	var employeeId int
+
+	err := r.db.QueryRowContext(ctx, query, input.Name, input.Surname, input.Phone, input.DepartmentId, input.Passport.Type, input.Passport.Number).Scan(&employeeId)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create employee: %w", err)
+		return 0, fmt.Errorf("failed to scan input.ID: %w", err)
 	}
 
-	return input.ID, nil
+	return employeeId, nil
 }
 
-func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.UpdateEmployeeRequest, id int) error {
-	var exists bool
-	checkQuery := "SELECT EXISTS(SELECT 1 FROM employees WHERE id = $1)"
-	err := r.db.QueryRowContext(ctx, checkQuery, id).Scan(&exists)
-	if err != nil {
-		return fmt.Errorf("failed to check if employee exists: %w", err)
-	}
-	if !exists {
-		return fmt.Errorf("employee with id %d does not exist", id)
-	}
-
+func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input domain.UpdateEmployee, id int) error {
 	values := make([]string, 0)
 	args := make([]any, 0)
 	argsId := 1
 
 	if input.Name != nil {
 		values = append(values, fmt.Sprintf("name=$%d", argsId))
-		args = append(args, *input.Name)
+		args = append(args, input.Name)
 		argsId++
 	}
 
 	if input.Surname != nil {
 		values = append(values, fmt.Sprintf("surname=$%d", argsId))
-		args = append(args, *input.Surname)
+		args = append(args, input.Surname)
 		argsId++
 	}
 
 	if input.Phone != nil {
 		values = append(values, fmt.Sprintf("phone=$%d", argsId))
-		args = append(args, *input.Phone)
+		args = append(args, input.Phone)
 		argsId++
 	}
 
@@ -70,13 +62,13 @@ func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.Up
 
 	if input.Passport.Type != nil {
 		values = append(values, fmt.Sprintf("passport_type=$%d", argsId))
-		args = append(args, *input.Passport.Type)
+		args = append(args, input.Passport.Type)
 		argsId++
 	}
 
 	if input.Passport.Number != nil {
 		values = append(values, fmt.Sprintf("passport_number=$%d", argsId))
-		args = append(args, *input.Passport.Number)
+		args = append(args, input.Passport.Number)
 		argsId++
 	}
 
@@ -85,15 +77,15 @@ func (r *EmployeeRepository) UpdateEmployee(ctx context.Context, input models.Up
 	query := fmt.Sprintf("UPDATE employees SET %s WHERE id = $%d", setQuery, argsId)
 	args = append(args, id)
 
-	_, err = r.db.ExecContext(ctx, query, args...)
+	_, err := r.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return err
+		return fmt.Errorf("ExecContext failed: %w", err)
 	}
 
 	return nil
 }
 
-func (r *EmployeeRepository) GetEmployeesCompanyDepartment(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
+func (r *EmployeeRepository) GetEmployeesByDepartmentId(ctx context.Context, id int) ([]domain.Employee, error) {
 	query := `SELECT * FROM employees WHERE department_id = $1;`
 
 	rows, err := r.db.QueryContext(ctx, query, id)
@@ -102,10 +94,10 @@ func (r *EmployeeRepository) GetEmployeesCompanyDepartment(ctx context.Context, 
 	}
 	defer rows.Close()
 
-	var list []models.EmployeeResponse
+	var list []domain.Employee
 
 	for rows.Next() {
-		var employee models.EmployeeResponse
+		var employee domain.Employee
 		if err := rows.Scan(&employee.ID, &employee.Name, &employee.Surname, &employee.Phone, &employee.DepartmentId, &employee.Passport.Type, &employee.Passport.Number); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
@@ -116,14 +108,10 @@ func (r *EmployeeRepository) GetEmployeesCompanyDepartment(ctx context.Context, 
 		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
-	if len(list) == 0 {
-		return nil, fmt.Errorf("no employees found for department ID: %d", id)
-	}
-
 	return list, nil
 }
 
-func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([]models.EmployeeResponse, error) {
+func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([]domain.Employee, error) {
 
 	query := `SELECT e.id, e.name, e.surname, e.phone, e.department_id, e.passport_type, e.passport_number FROM employees e
 	          JOIN departments d ON d.id = e.id 
@@ -135,10 +123,10 @@ func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([
 	}
 	defer rows.Close()
 
-	var list []models.EmployeeResponse
+	var list []domain.Employee
 
 	for rows.Next() {
-		var employee models.EmployeeResponse
+		var employee domain.Employee
 		if err := rows.Scan(&employee.ID, &employee.Name, &employee.Surname, &employee.Phone, &employee.DepartmentId, &employee.Passport.Type, &employee.Passport.Number); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
@@ -147,10 +135,6 @@ func (r *EmployeeRepository) GetEmployeesCompany(ctx context.Context, id int) ([
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error: %w", err)
-	}
-
-	if len(list) == 0 {
-		return nil, fmt.Errorf("no employees found for department ID: %d", id)
 	}
 
 	return list, nil

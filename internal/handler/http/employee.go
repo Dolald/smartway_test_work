@@ -6,13 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Dolald/smartway_test_work/configs"
 	"github.com/Dolald/smartway_test_work/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) createEmployee(c *gin.Context) {
-	var input models.EmployeeRequest
+	var input models.CreateEmployeeRequest
 
 	if err := c.BindJSON(&input); err != nil {
 		slog.Error("bindJSON failed", slog.String("error", err.Error()))
@@ -20,25 +19,25 @@ func (h *Handler) createEmployee(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), configs.ContextTime)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
-	workerId, err := h.service.Employee.CreateEmployee(ctx, input)
+	employeeId, err := h.service.Employee.CreateEmployee(ctx, input)
 	if err != nil {
-		slog.Error("createEmployee failed", slog.String("error", err.Error()))
+		slog.Error("CreateEmployee failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to create employee"})
 		return
 	}
 
-	c.JSON(http.StatusOK, workerId)
+	c.JSON(http.StatusOK, employeeId)
 }
 
 func (h *Handler) updateEmployee(c *gin.Context) {
-	id := c.Param(configs.Id)
+	id := c.Param(h.cfg.UrlId)
 	employeetId, err := strconv.Atoi(id)
 	if err != nil {
-		slog.Error("get department id failed", slog.String("error", err.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "falied to get department id"})
+		slog.Error("get employee id failed", slog.String("error", err.Error()))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "falied to get employee id"})
 		return
 	}
 
@@ -50,12 +49,12 @@ func (h *Handler) updateEmployee(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), configs.ContextTime)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
 	err = h.service.Employee.UpdateEmployee(ctx, input, employeetId)
 	if err != nil {
-		slog.Error("updateEmployee failed", slog.String("error", err.Error()))
+		slog.Error("UpdateEmployee failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to update employee"})
 		return
 	}
@@ -63,8 +62,8 @@ func (h *Handler) updateEmployee(c *gin.Context) {
 	c.JSON(http.StatusOK, input)
 }
 
-func (h *Handler) getEmployeesCompanyDepartment(c *gin.Context) {
-	id := c.Param(configs.Id)
+func (h *Handler) getEmployeesByDepartmentId(c *gin.Context) {
+	id := c.Param(h.cfg.UrlId)
 	departmentId, err := strconv.Atoi(id)
 	if err != nil {
 		slog.Error("get department id failed", slog.String("error", err.Error()))
@@ -72,12 +71,12 @@ func (h *Handler) getEmployeesCompanyDepartment(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), configs.ContextTime)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
-	employeesList, err := h.service.Employee.GetEmployeesCompanyDepartment(ctx, departmentId)
+	employeesList, err := h.service.Employee.GetEmployeesByDepartmentId(ctx, departmentId)
 	if err != nil {
-		slog.Error("getEmployeesCompanyDepartment failed", slog.String("error", err.Error()))
+		slog.Error("GetEmployeesByDepartmentId failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to get employee list"})
 		return
 	}
@@ -86,7 +85,7 @@ func (h *Handler) getEmployeesCompanyDepartment(c *gin.Context) {
 }
 
 func (h *Handler) getCompanyEmployees(c *gin.Context) {
-	id := c.Param(configs.Id)
+	id := c.Param(h.cfg.UrlId)
 	companyId, err := strconv.Atoi(id)
 	if err != nil {
 		slog.Error("get company id failed", slog.String("error", err.Error()))
@@ -94,12 +93,12 @@ func (h *Handler) getCompanyEmployees(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), configs.ContextTime)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
 	employeesList, err := h.service.Employee.GetEmployeesCompany(ctx, companyId)
 	if err != nil {
-		slog.Error("getEmployeesCompany failed", slog.String("error", err.Error()))
+		slog.Error("GetEmployeesCompany failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to get employee list"})
 		return
 	}
@@ -108,7 +107,7 @@ func (h *Handler) getCompanyEmployees(c *gin.Context) {
 }
 
 func (h *Handler) deleteEmployee(c *gin.Context) {
-	id := c.Param(configs.Id)
+	id := c.Param(h.cfg.UrlId)
 	employeeId, err := strconv.Atoi(id)
 	if err != nil {
 		slog.Error("get employee id failed", slog.String("error", err.Error()))
@@ -116,12 +115,12 @@ func (h *Handler) deleteEmployee(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), configs.ContextTime)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), h.cfg.RequestTimeout)
 	defer cancel()
 
 	err = h.service.Employee.DeleteEmployee(ctx, employeeId)
 	if err != nil {
-		slog.Error("deleteEmployee failed", slog.String("error", err.Error()))
+		slog.Error("DeleteEmployee failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falied to delete employee"})
 		return
 	}
