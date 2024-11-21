@@ -9,7 +9,7 @@
 Сервис поддерживает следующие функции:
 
 1. **Добавление сотрудников**: 
-   - Эндпоинт: `POST /employees/companies/departments//add_employee`
+   - Эндпоинт: `POST /employees/companies/departments/add_employee`
    - В ответ возвращается ID добавленного сотрудника.
 
    Запрос
