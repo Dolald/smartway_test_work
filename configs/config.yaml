@@ -6,7 +6,7 @@ db:
    port: "5428"
 
 server:
-   port: ":8020"
+   port: ":8030"
    maxHeaderBytes: 1048576
    readTimeout: 10s
    writeTimeout: 10s

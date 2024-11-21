@@ -12,8 +12,6 @@ import (
 	"github.com/Dolald/smartway_test_work/internal/repository"
 	"github.com/Dolald/smartway_test_work/internal/service"
 	"github.com/Dolald/smartway_test_work/server"
-	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 )
 
 func Run() {
@@ -22,17 +20,13 @@ func Run() {
 		slog.Error("error initializing configs", slog.String("error", err.Error()))
 	}
 
-	if err := godotenv.Load(); err != nil {
-		slog.Error("error loading env variables: %s", slog.String("error", err.Error()))
-	}
-
 	db, err := repository.NewPostgresDB(&configs.DatabaseConfig{
 		Host:     cfg.DataBase.Host,
 		Port:     cfg.DataBase.Port,
 		Username: cfg.DataBase.Username,
 		DBName:   cfg.DataBase.DBName,
 		SSLMode:  cfg.DataBase.SSLMode,
-		Password: os.Getenv("DB_PASSWORD"),
+		Password: cfg.DataBase.Password,
 	})
 
 	if err != nil {
@@ -46,7 +40,7 @@ func Run() {
 	server := new(server.Server)
 
 	go func() {
-		if err := server.Run(viper.GetString("server.port"), handlers.InitRoutes()); err != nil {
+		if err := server.Run(handlers.InitRoutes(), cfg.Server); err != nil {
 			slog.Error("error occured while runnung http server", slog.String("error", err.Error()))
 		}
 	}()
